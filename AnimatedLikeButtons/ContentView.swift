@@ -1,55 +1,15 @@
-//
-//  ContentView.swift
-//  AnimatedLikeButtons
-//
-//  Created by TAAT on 2025/03/07.
-//
-
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @State var isLiked = false
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+        VStack(spacing: 40) {
+            HStack(spacing: 40) {
+                LikeButton(isLiked: $isLiked, type: .firework)
+                LikeButton(isLiked: $isLiked, type: .heart)
+                LikeButton(isLiked: $isLiked, type: .up)
+                LikeButton(isLiked: $isLiked, type: .rightUp)
             }
         }
     }
@@ -57,5 +17,10 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+}
+
+func withoutAnimation<Result>(_ body: () throws -> Result) rethrows -> Result {
+    var transaction = Transaction()
+    transaction.disablesAnimations = true
+    return try withTransaction(transaction, body)
 }
